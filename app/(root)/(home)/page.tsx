@@ -1,3 +1,4 @@
+import ResourcesCard from '@/components/ResourcesCard';
 import SearchForm from '@/components/SearchForm';
 import Filters from '@/components/ui/Filters';
 import { getResources } from '@/sanity/actions';
@@ -16,6 +17,26 @@ const Page = async () => {
       </section>
       
       <Filters />
+
+      <section className='flex-center mt-6 w-full flex-col sm:mt-20'>
+        Header
+        <div className='mt-12 flex w-full flex-wrap justify-center gap-16 sm:justify-start'>
+          {resources.length > 0 ? (
+            resources.map((resource: any) => (
+              <ResourcesCard
+                key={resource._id}
+                id={resource._id}
+                title={resource.title}
+                image={resource.image}
+                downloadNumber={resource.views}
+              />
+            ))
+          ) : (
+            <p className='body-regular text-white-400'>No resources found</p>
+          )
+        }
+        </div>
+      </section>      
     </main>
   );
 };
