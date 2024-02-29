@@ -1,3 +1,5 @@
+import qs from 'query-string';
+
 interface BuildQueryParams {
     type: string;
     query: string;
@@ -6,22 +8,41 @@ interface BuildQueryParams {
     perPage?: number;
 }
 
-export function buildQuery({ type, query, category, page = 1, perPage = 10}: BuildQueryParams) {
-    const conditions = [`*[_type=="${type}"]`];
+export function buildQuery(params: BuildQueryParams) {
+  const { type, query, category, page = 1, perPage = 20 } = params;
 
-    if (query) {
-        conditions.push(`title match "*${query}*"`);
-    }
-    if (category && category !== 'all') {
-        conditions.push(`category == "${category}"`);
-    }
+  const conditions = [`*[_type=="${type}"`];
 
-    const offset = (page - 1) * perPage;
-    const limit = perPage;
+  if (query) conditions.push(`title match "*${query}*"`);
 
-    if (conditions.length > 1) {
-        return `${conditions[0]} && (${conditions.slice(1).join(' && ')})][${offset}...${limit}]`
-    } else {
-        return `${conditions[0]}[${offset}...${limit}]`;
-    }
+  if (category && category !== "all") {
+    conditions.push(`category == "${category}"`);
+  }
+
+  // Calculate pagination limits
+  const offset = (page - 1) * perPage;
+  const limit = perPage;
+
+  return conditions.length > 1
+    ? `${conditions[0]} && (${conditions
+        .slice(1)
+        .join(" && ")})][${offset}...${limit}]`
+    : `${conditions[0]}][${offset}...${limit}]`;
+}
+
+interface UrlQueryParams {
+    params: string;
+    key: string;
+    value: string | null;
+}
+
+export function formUrlQuery({ params, key, value }: UrlQueryParams) {
+    const currentUrl = qs.parse(params);
+
+    currentUrl[key] = value;
+
+    return qs.stringifyUrl(
+        { url: window.location.pathname, query: currentUrl },
+        { skipNull: true }
+    )
 }
